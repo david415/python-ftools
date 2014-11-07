@@ -96,14 +96,15 @@ def main():
         for (path, dirs, files) in os.walk(options.directory):
             for myfile in files:
                 f = os.path.join(path,myfile)
-                fd = file(f,'r')
-                file_size = os.fstat(fd.fileno())[stat.ST_SIZE]
-                if file_size == 0:
+                if os.path.isfile(f):
+                    fd = file(f,'r')
+                    file_size = os.fstat(fd.fileno())[stat.ST_SIZE]
+                    if file_size == 0:
+                        fd.close()
+                        continue
+                    pages_cached, pages_total = ftools.fincore_ratio(fd.fileno())
                     fd.close()
-                    continue
-                pages_cached, pages_total = ftools.fincore_ratio(fd.fileno())
-                fd.close()
-                rows.append([f, file_size, pages_total, pages_cached, (pages_cached * page_size), (float(pages_cached) / float(pages_total)) * 100.0])
+                    rows.append([f, file_size, pages_total, pages_cached, (pages_cached * page_size), (float(pages_cached) / float(pages_total)) * 100.0])
 
     for f in args:
         fd = file(f, 'r')
